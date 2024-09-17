@@ -7,4 +7,10 @@ export class IOSStatusBarWeb extends WebPlugin implements IOSStatusBarPlugin {
     console.log('ECHO', options);
     return options;
   }
+  async setStatusBarColor(options: { color: string }): Promise<void> {
+    console.log('Setting status bar color to"', options.color);
+  }
+  async setBottomBarColor(options: { color: string }): Promise<void> {
+    console.log('Setting bottom bar color to:', options.color);
+  }
 }

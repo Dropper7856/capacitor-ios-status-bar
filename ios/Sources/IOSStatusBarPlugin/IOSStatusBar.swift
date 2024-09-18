@@ -1,4 +1,5 @@
 import Foundation
+import Cordova
 
 @objc public class IOSStatusBar: NSObject {
     @objc public func echo(_ value: String) -> String {
@@ -8,26 +9,48 @@ import Foundation
 
     @objc public func setStatusBarColor(_ colorHex: String) {
         DispatchQueue.main.async {
-            if #available(iOS 13.0, *) {
-                guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                      let statusBarManager = windowScene.statusBarManager,
-                      let statusBarFrame = statusBarManager.statusBarFrame as CGRect? else {
-                    print("Failed to access statusBarManager")
-                    return
+            let color = UIColor(hex: colorHex) ?? UIColor.white
+
+            // Changer la couleur de fond de la fenêtre principale
+            if let window = UIApplication.shared.windows.first {
+                window.backgroundColor = color
+
+                // Supprimer les vues de la barre de statut existantes
+                if let existingStatusBarView = window.viewWithTag(12345) {
+                    existingStatusBarView.removeFromSuperview()
                 }
 
                 // Créer une vue pour simuler la couleur de la barre de statut
-                let statusBarView = UIView(frame: statusBarFrame)
-                statusBarView.backgroundColor = UIColor(hex: colorHex)
-                UIApplication.shared.keyWindow?.addSubview(statusBarView)
-            } else {
-                // iOS 12 et inférieur
-                if let statusBar = UIApplication.shared.value(forKey: "statusBar") as? UIView {
-                    statusBar.backgroundColor = UIColor(hex: colorHex)
+                if #available(iOS 13.0, *) {
+                    guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                          let statusBarManager = windowScene.statusBarManager else {
+                        print("Failed to access statusBarManager")
+                        return
+                    }
+
+                    let statusBarView = UIView(frame: statusBarManager.statusBarFrame)
+                    statusBarView.backgroundColor = color
+                    statusBarView.tag = 12345
+                    window.addSubview(statusBarView)
+                } else {
+                    // iOS 12 et inférieur
+                    if let statusBar = UIApplication.shared.value(forKey: "statusBar") as? UIView {
+                        statusBar.backgroundColor = color
+                    }
+                }
+
+                // Changer la couleur de fond de la WebView
+                if let rootViewController = window.rootViewController as? CDVViewController {
+                    rootViewController.webView?.backgroundColor = color
+                    rootViewController.view.backgroundColor = color
                 }
             }
         }
     }
+
+
+
+
 
 
         @objc public func setBottomBarColor(_ colorHex: String) {
